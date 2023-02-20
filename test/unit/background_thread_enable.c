@@ -12,9 +12,12 @@ max_test_narenas(void) {
 	 * approximation.
 	 */
 	unsigned ret = 10 * ncpus;
-	/* Limit the max to avoid VM exhaustion on 32-bit . */
-	if (ret > 512) {
-		ret = 512;
+	// Limit the max to avoid running out of arenas. There are quite a few
+	// tests where arenas.create is called but arena.<i>.destroy is not, so the
+	// arena remains. Once those are fixed, we should be able to change this to
+	// a larger limit capped at ARENAS_LIMIT.
+	if (ret > 50) {
+		ret = 50;
 	}
 
 	return ret;
