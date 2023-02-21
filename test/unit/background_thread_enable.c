@@ -8,14 +8,11 @@ TEST_BEGIN(test_deferred) {
 	unsigned id;
 	size_t sz_u = sizeof(unsigned);
 
-	/*
-	 * 10 here is somewhat arbitrary, except insofar as we want to ensure
-	 * that the number of background threads is smaller than the number of
-	 * arenas.  I'll ragequit long before we have to spin up 10 threads per
-	 * cpu to handle background purging, so this is a conservative
-	 * approximation.
-	 */
-	for (unsigned i = 0; i < 10 * ncpus; i++) {
+	// There are quite a few tests where arenas.create is called but
+	// arena.<i>.destroy is not, so the arena remains. Once those are fixed, we
+	// should be able to change this to a larger limit capped at ARENAS_LIMIT.
+	unsigned max_test_areans = 50;
+	for (unsigned i = 0; i < max_test_areans; i++) {
 		assert_d_eq(mallctl("arenas.create", &id, &sz_u, NULL, 0), 0,
 		    "Failed to create arena");
 	}
