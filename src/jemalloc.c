@@ -23,6 +23,7 @@
 #include "jemalloc/internal/sz.h"
 #include "jemalloc/internal/ticker.h"
 #include "jemalloc/internal/thread_event.h"
+#include "jemalloc/internal/tsd.h"
 #include "jemalloc/internal/util.h"
 
 #include "jemalloc/internal/conf.h"
@@ -3084,6 +3085,13 @@ je_malloc_usable_size(JEMALLOC_USABLE_SIZE_CONST void *ptr) {
 
 	LOG("core.malloc_usable_size.exit", "result: %zu", ret);
 	return ret;
+}
+
+JEMALLOC_EXPORT void JEMALLOC_NOTHROW
+je_thread_cleanup() {
+	#if defined(JEMALLOC_MALLOC_THREAD_CLEANUP) || defined(_WIN32)
+	_malloc_thread_cleanup();
+	#endif
 }
 
 #ifdef JEMALLOC_HAVE_MALLOC_SIZE
