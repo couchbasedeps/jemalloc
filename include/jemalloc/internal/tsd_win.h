@@ -32,6 +32,10 @@ tsd_cleanup_wrapper(void) {
 		}
 	}
 	malloc_tsd_dalloc(wrapper);
+	if (!TlsSetValue(tsd_tsd, NULL)) {
+		malloc_write("<jemalloc>: Error clearing TSD\n");
+		abort();
+	}
 	return false;
 }
 
