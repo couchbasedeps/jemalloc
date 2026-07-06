@@ -23,6 +23,7 @@
 #include "jemalloc/internal/sz.h"
 #include "jemalloc/internal/ticker.h"
 #include "jemalloc/internal/thread_event.h"
+#include "jemalloc/internal/tsd.h"
 #include "jemalloc/internal/util.h"
 
 #include "jemalloc/internal/conf.h"
@@ -1592,9 +1593,10 @@ imalloc_body(static_opts_t *sopts, dynamic_opts_t *dopts, tsd_t *tsd) {
 		 * We should never specify particular arenas or tcaches from
 		 * within our internal allocations.
 		 */
-		assert(dopts->tcache_ind == TCACHE_IND_AUTOMATIC
-		    || dopts->tcache_ind == TCACHE_IND_NONE);
-		assert(dopts->arena_ind == ARENA_IND_AUTOMATIC);
+		assert(dopts->tcache_ind == TCACHE_IND_AUTOMATIC ||
+		    dopts->tcache_ind == TCACHE_IND_NONE);
+		assert(dopts->arena_ind == ARENA_IND_AUTOMATIC ||
+		    dopts->arena_ind == 0);
 		dopts->tcache_ind = TCACHE_IND_NONE;
 		/* We know that arena 0 has already been initialized. */
 		dopts->arena_ind = 0;
@@ -3083,6 +3085,13 @@ je_malloc_usable_size(JEMALLOC_USABLE_SIZE_CONST void *ptr) {
 
 	LOG("core.malloc_usable_size.exit", "result: %zu", ret);
 	return ret;
+}
+
+JEMALLOC_EXPORT void JEMALLOC_NOTHROW
+je_thread_cleanup() {
+	#if defined(JEMALLOC_MALLOC_THREAD_CLEANUP) || defined(_WIN32)
+	_malloc_thread_cleanup();
+	#endif
 }
 
 #ifdef JEMALLOC_HAVE_MALLOC_SIZE
