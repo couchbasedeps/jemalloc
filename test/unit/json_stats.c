@@ -329,11 +329,15 @@ TEST_BEGIN(test_json_stats_mutexes) {
 
 	for (size_t i = 0; i < num_arena_mutexes; i++) {
 		/*
-		 * MALLCTL_ARENAS_ALL is 4096 representing all arenas in
-		 * mallctl queries.
+		 * MALLCTL_ARENAS_ALL selects the merged stats across all
+		 * arenas.  Its numeric value is not a fixed constant: with
+		 * --with-lg-tcache-limit it is computed as 2^(24 - limit)
+		 * (4096 by default, but e.g. 512 at limit 15), so stringify
+		 * the macro rather than hard-coding 4096.
 		 */
 		verify_mutex_json(arena_mutexes_section,
-		    "stats.arenas.4096.mutexes", arena_mutex_names[i]);
+		    "stats.arenas." STRINGIFY(MALLCTL_ARENAS_ALL) ".mutexes",
+		    arena_mutex_names[i]);
 	}
 
 	stats_buf_fini(&sbuf);
